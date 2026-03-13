@@ -5,6 +5,8 @@
  */
 
 import { DEFAULT_PRODUCTS, Product, DiscountCode, SiteSettings } from "./products";
+import { db } from "./firebase";
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 
 const KEYS = {
   PRODUCTS: "dd_products_v2",
@@ -106,23 +108,24 @@ export function getRelatedProducts(product: Product): Product[] {
     .filter(Boolean) as Product[];
 }
 
-export function saveProduct(product: Product): void {
-  const products = getProducts();
-  const idx = products.findIndex((p) => p.id === product.id);
-  if (idx >= 0) {
-    products[idx] = product;
-  } else {
-    products.push(product);
+export async function saveProduct(product: Product): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "products", product.id.toString());
+    await setDoc(ref, product);
+  } catch (e) {
+    console.error("Failed to save product to Firestore", e);
   }
-  save(KEYS.PRODUCTS, products);
-  // Dispatch event so components can react
-  dispatchStoreEvent("products");
 }
 
-export function deleteProduct(id: number): void {
-  const products = getProducts().filter((p) => p.id !== id);
-  save(KEYS.PRODUCTS, products);
-  dispatchStoreEvent("products");
+export async function deleteProduct(id: number): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "products", id.toString());
+    await deleteDoc(ref);
+  } catch (e) {
+    console.error("Failed to delete product from Firestore", e);
+  }
 }
 
 export function generateProductId(): number {
@@ -150,19 +153,24 @@ export function getDiscounts(): DiscountCode[] {
   return load<DiscountCode[]>(KEYS.DISCOUNTS, DEFAULT_DISCOUNTS);
 }
 
-export function saveDiscount(code: DiscountCode): void {
-  const discounts = getDiscounts();
-  const idx = discounts.findIndex((d) => d.code === code.code);
-  if (idx >= 0) discounts[idx] = code;
-  else discounts.push(code);
-  save(KEYS.DISCOUNTS, discounts);
-  dispatchStoreEvent("discounts");
+export async function saveDiscount(code: DiscountCode): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "discounts", code.code.toUpperCase());
+    await setDoc(ref, code);
+  } catch (e) {
+    console.error("Failed to save discount to Firestore", e);
+  }
 }
 
-export function deleteDiscount(code: string): void {
-  const discounts = getDiscounts().filter((d) => d.code !== code);
-  save(KEYS.DISCOUNTS, discounts);
-  dispatchStoreEvent("discounts");
+export async function deleteDiscount(code: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "discounts", code.toUpperCase());
+    await deleteDoc(ref);
+  } catch (e) {
+    console.error("Failed to delete discount from Firestore", e);
+  }
 }
 
 export function applyDiscount(code: string, price: number): { valid: boolean; finalPrice: number; discount: DiscountCode | null } {
@@ -197,19 +205,24 @@ export function getActiveOffer(): Offer | null {
   return offers.find((o) => o.active) || null;
 }
 
-export function saveOffer(offer: Offer): void {
-  const offers = getOffers();
-  const idx = offers.findIndex((o) => o.id === offer.id);
-  if (idx >= 0) offers[idx] = offer;
-  else offers.push(offer);
-  save(KEYS.OFFERS, offers);
-  dispatchStoreEvent("offers");
+export async function saveOffer(offer: Offer): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "offers", offer.id);
+    await setDoc(ref, offer);
+  } catch (e) {
+    console.error("Failed to save offer to Firestore", e);
+  }
 }
 
-export function deleteOffer(id: string): void {
-  const offers = getOffers().filter((o) => o.id !== id);
-  save(KEYS.OFFERS, offers);
-  dispatchStoreEvent("offers");
+export async function deleteOffer(id: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const ref = doc(db, "offers", id);
+    await deleteDoc(ref);
+  } catch (e) {
+    console.error("Failed to delete offer from Firestore", e);
+  }
 }
 
 // ─── Site Settings ─────────────────────────────────────────────────────────────
@@ -328,5 +341,52 @@ export function notifyNewOrder(order: Order): void {
     icon: "/favicon.ico",
     tag: order.id,
   });
+}
+
+// ─── FIRESTORE BACKGROUND SYNC ──────────────────────────────────────────────────
+let isStoreInitialized = false;
+
+export function initializeGlobalStoreSync() {
+  if (typeof window === "undefined" || isStoreInitialized) return;
+  isStoreInitialized = true;
+
+  // Sync Products
+  onSnapshot(collection(db, "products"), (snapshot) => {
+    if (!snapshot.empty) {
+      const products = snapshot.docs.map((d) => d.data() as Product);
+      save(KEYS.PRODUCTS, products);
+      dispatchStoreEvent("products");
+    } else {
+      // Seed initial data if absolutely empty
+      DEFAULT_PRODUCTS.forEach(p => saveProduct(p));
+    }
+  });
+
+  // Sync Discounts
+  onSnapshot(collection(db, "discounts"), (snapshot) => {
+    if (!snapshot.empty) {
+      const discounts = snapshot.docs.map((d) => d.data() as DiscountCode);
+      save(KEYS.DISCOUNTS, discounts);
+      dispatchStoreEvent("discounts");
+    } else {
+      DEFAULT_DISCOUNTS.forEach(d => saveDiscount(d));
+    }
+  });
+
+  // Sync Offers
+  onSnapshot(collection(db, "offers"), (snapshot) => {
+    if (!snapshot.empty) {
+      const offers = snapshot.docs.map((d) => d.data() as Offer);
+      save(KEYS.OFFERS, offers);
+      dispatchStoreEvent("offers");
+    } else {
+      DEFAULT_OFFERS.forEach(o => saveOffer(o));
+    }
+  });
+}
+
+// Auto-run on client mount
+if (typeof window !== "undefined") {
+  initializeGlobalStoreSync();
 }
 

@@ -342,13 +342,21 @@ export default function AdminPage() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  // Live-update when orders change (e.g. from another tab or checkout)
+  // Live-update when store changes (e.g. from Firestore sync or checkout)
   useEffect(() => {
     return onStoreUpdate((type) => {
       if (type === "orders") {
         const o = getOrders();
         setOrders(o);
         setUnreadOrders(o.filter((x) => !x.read).length);
+      } else if (type === "products") {
+        setProducts(getProducts());
+      } else if (type === "discounts") {
+        setDiscounts(getDiscounts());
+      } else if (type === "offers") {
+        setOffers(getOffers());
+      } else if (type === "settings") {
+        setSettings(getSettings());
       }
     });
   }, []);
