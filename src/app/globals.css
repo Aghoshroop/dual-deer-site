@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 5, 5, 5;
+  --background-end-rgb: 5, 5, 5;
+  --violet: #6A00FF;
+  --violet-electric: #9D4DFF;
+  --violet-lavender: #C084FF;
+  --neon-cyan: #00E5FF;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar — violet accent */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #6A00FF, #9D4DFF);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #9D4DFF, #C084FF);
+}
+
+/* ── Text Gradients ── */
+.text-gradient {
+  background: linear-gradient(135deg, #C084FF 0%, #9D4DFF 50%, #6A00FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #00E5FF 0%, #9D4DFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Glassmorphism Panels ── */
+.glass-panel {
+  background: rgba(10, 10, 10, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(157, 77, 255, 0.12);
+}
+
+.glass-panel-violet {
+  background: rgba(106, 0, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(157, 77, 255, 0.25);
+}
+
+/* ── Glow Utilities ── */
+.glow-violet {
+  box-shadow: 0 0 40px rgba(106, 0, 255, 0.45), 0 0 80px rgba(106, 0, 255, 0.2);
+}
+
+.glow-violet-sm {
+  box-shadow: 0 0 20px rgba(157, 77, 255, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.45);
+}
+
+.glow-blue {
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.4);
+}
+
+/* ── Card Effects ── */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 60px rgba(106, 0, 255, 0.3), 0 0 0 1px rgba(157, 77, 255, 0.3);
+}
+
+/* ── Violet gradient border ── */
+.violet-border {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.violet-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #6A00FF, #9D4DFF, #C084FF);
+  z-index: -1;
+}
+
+/* ── Neon accent line ── */
+.neon-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #9D4DFF, #C084FF, #9D4DFF, transparent);
+}
+
+/* ── Radial Violet Bg ── */
+.violet-radial-bg {
+  background: radial-gradient(ellipse at center, rgba(106, 0, 255, 0.15) 0%, transparent 70%);
+}
+
+/* ── Particle dot ── */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 132, 255, 0.8), transparent);
+  pointer-events: none;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-30px) scale(1.1); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes tilt {
+  0%, 100% { transform: rotate(-1deg) scale(1.01); }
+  50% { transform: rotate(1deg) scale(1.01); }
+}
+
+/* ── Magnetic Button ── */
+.magnetic-btn {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.25s ease;
+  cursor: pointer;
+}
+
+/* ── Animated Gradient Border ── */
+@keyframes gradient-border-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border-animated {
+  position: relative;
+  border-radius: inherit;
+}
+.gradient-border-animated::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #6A00FF, #9D4DFF, #C084FF, #00E5FF, #6A00FF);
+  background-size: 300% 300%;
+  animation: gradient-border-rotate 4s ease infinite;
+  z-index: -1;
+}
+
+/* ── Smooth page reveal ── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: page-enter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── Product hover glow ── */
+.product-card-glow {
+  transition: box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.product-card-glow:hover {
+  transform: translateY(-6px) scale(1.015);
+}
+
+/* ── Snap scroll container ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
