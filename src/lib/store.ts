@@ -79,6 +79,13 @@ function save<T>(key: string, value: T): void {
   }
 }
 
+// ─── Firestore Helpers ────────────────────────────────────────────────────────
+
+/** Strips fields with `undefined` values — Firestore rejects them. */
+function sanitize<T extends object>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
+
 // ─── Product Store ─────────────────────────────────────────────────────────────
 
 export function getProducts(): Product[] {
@@ -112,7 +119,7 @@ export async function saveProduct(product: Product): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     const ref = doc(db, "products", product.id.toString());
-    await setDoc(ref, product);
+    await setDoc(ref, sanitize(product));
   } catch (e) {
     console.error("Failed to save product to Firestore", e);
   }
@@ -129,8 +136,8 @@ export async function deleteProduct(id: number): Promise<void> {
 }
 
 export function generateProductId(): number {
-  const products = getProducts();
-  return products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
+  // Use timestamp-based ID to guarantee uniqueness even before Firestore syncs
+  return Date.now();
 }
 
 export function generateSlug(name: string): string {
@@ -157,7 +164,7 @@ export async function saveDiscount(code: DiscountCode): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     const ref = doc(db, "discounts", code.code.toUpperCase());
-    await setDoc(ref, code);
+    await setDoc(ref, sanitize(code));
   } catch (e) {
     console.error("Failed to save discount to Firestore", e);
   }
@@ -209,7 +216,7 @@ export async function saveOffer(offer: Offer): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     const ref = doc(db, "offers", offer.id);
-    await setDoc(ref, offer);
+    await setDoc(ref, sanitize(offer));
   } catch (e) {
     console.error("Failed to save offer to Firestore", e);
   }
