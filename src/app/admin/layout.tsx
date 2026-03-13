@@ -33,7 +33,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       setError(err.message || "Failed to authenticate.");
     } finally {
       setIsSubmitting(false);
