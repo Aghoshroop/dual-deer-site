@@ -78,7 +78,7 @@ function ProductForm({ product, onSave, onCancel }: {
       setImageUrls(urls);
     };
     loadImages();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.images.join(",")]);
 
 
@@ -370,15 +370,13 @@ export default function AdminPage() {
 
   const handleSaveProduct = (product: Product) => {
     saveProduct(product);
-    reload();
     setShowProductForm(false);
     setEditingProduct(undefined);
-    showToast("Product saved!");
+    showToast("Product saved! Syncing to cloud...");
   };
 
   const handleDeleteProduct = (id: number) => {
     deleteProduct(id);
-    reload();
     setConfirmDelete(null);
     showToast("Product deleted.");
   };
@@ -390,10 +388,9 @@ export default function AdminPage() {
   const handleSaveDiscount = () => {
     if (!discountForm.code.trim()) { alert("Code is required."); return; }
     saveDiscount({ ...discountForm, code: discountForm.code.toUpperCase() });
-    reload();
     setShowDiscountForm(false);
     setEditingDiscount(null);
-    showToast("Discount code saved!");
+    showToast("Discount code saved! Syncing to cloud...");
   };
 
   // ─── Offer Actions ─────────────────────────────────────────────────────────
@@ -410,10 +407,9 @@ export default function AdminPage() {
       createdAt: offerForm.createdAt || Date.now(),
     };
     saveOffer(offer);
-    reload();
     setShowOfferForm(false);
     setEditingOffer(null);
-    showToast("Offer saved!");
+    showToast("Offer saved! Syncing to cloud...");
   };
 
   // ─── Settings ─────────────────────────────────────────────────────────────
@@ -597,10 +593,10 @@ export default function AdminPage() {
                           style={{
                             background: order.status === "new" ? "rgba(157,77,255,0.15)" :
                               order.status === "processing" ? "rgba(234,179,8,0.15)" :
-                              order.status === "shipped" ? "rgba(59,130,246,0.15)" : "rgba(34,197,94,0.15)",
+                                order.status === "shipped" ? "rgba(59,130,246,0.15)" : "rgba(34,197,94,0.15)",
                             color: order.status === "new" ? "#C084FF" :
                               order.status === "processing" ? "#EAB308" :
-                              order.status === "shipped" ? "#60A5FA" : "#4ADE80",
+                                order.status === "shipped" ? "#60A5FA" : "#4ADE80",
                           }}
                         >
                           {order.status}
@@ -682,8 +678,8 @@ export default function AdminPage() {
               </div>
 
               <div className="space-y-2">
-                {products.map((product) => (
-                  <ProductRow key={product.id} product={product}
+                {products.map((product, index) => (
+                  <ProductRow key={`${product.id}-${index}`} product={product}
                     onEdit={() => { setEditingProduct(product); setShowProductForm(true); }}
                     onDelete={() => setConfirmDelete({ type: "product", id: product.id })} />
                 ))}
@@ -717,7 +713,7 @@ export default function AdminPage() {
                     <span className="font-bold" style={{ color: "#C084FF" }}>
                       {code.type === "percent" ? `${code.discount}%` : `$${code.discount}`} OFF
                     </span>
-                    <button onClick={() => { saveDiscount({ ...code, active: !code.active }); reload(); }}
+                    <button onClick={() => { saveDiscount({ ...code, active: !code.active }); }}
                       className="transition-colors">
                       {code.active
                         ? <ToggleRight className="w-7 h-7 text-green-400" />
@@ -766,7 +762,7 @@ export default function AdminPage() {
                       <p className="text-white font-semibold">{offer.title}</p>
                       {offer.subtitle && <p className="text-sm text-gray-400 mt-0.5">{offer.subtitle}</p>}
                     </div>
-                    <button onClick={() => { saveOffer({ ...offer, active: !offer.active }); reload(); }}
+                    <button onClick={() => { saveOffer({ ...offer, active: !offer.active }); }}
                       className="transition-colors flex-shrink-0">
                       {offer.active
                         ? <ToggleRight className="w-7 h-7 text-green-400" />
@@ -1056,8 +1052,8 @@ export default function AdminPage() {
                 </button>
                 <button onClick={() => {
                   if (confirmDelete.type === "product") handleDeleteProduct(confirmDelete.id as number);
-                  else if (confirmDelete.type === "discount") { deleteDiscount(confirmDelete.id as string); reload(); setConfirmDelete(null); showToast("Discount deleted."); }
-                  else if (confirmDelete.type === "offer") { deleteOffer(confirmDelete.id as string); reload(); setConfirmDelete(null); showToast("Offer deleted."); }
+                  else if (confirmDelete.type === "discount") { deleteDiscount(confirmDelete.id as string); setConfirmDelete(null); showToast("Discount deleted."); }
+                  else if (confirmDelete.type === "offer") { deleteOffer(confirmDelete.id as string); setConfirmDelete(null); showToast("Offer deleted."); }
                 }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
                   style={{ background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.3)" }}>
@@ -1082,11 +1078,11 @@ function ProductRow({ product, onEdit, onDelete }: {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const firstImg = product.images[0];
+    const firstImg = product.images?.[0];
     if (firstImg) {
       getImage(firstImg).then(url => setImgUrl(url));
     }
-  }, [product.images]);
+  }, [product]);
 
   return (
     <div className="flex items-center gap-4 p-4 rounded-xl transition-colors hover:border-purple-500/20"

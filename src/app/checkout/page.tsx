@@ -9,7 +9,7 @@ import {
   Zap, Apple, Check, ShieldCheck, Star,
 } from "lucide-react";
 import Link from "next/link";
-import { saveOrder, notifyNewOrder, requestNotificationPermission, Order } from "@/lib/store";
+import { saveOrder, notifyNewOrder, requestNotificationPermission, Order, applyDiscount as applyDiscountCode } from "@/lib/store";
 
 
 type Step = "shipping" | "payment" | "review";
@@ -77,6 +77,7 @@ export default function CheckoutPage() {
   const [ordered, setOrdered] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState("");
+  const [appliedDiscountAmount, setAppliedDiscountAmount] = useState(0);
 
   // Ask for notification permission so admin gets alerted on order
   useEffect(() => { requestNotificationPermission(); }, []);
@@ -96,17 +97,21 @@ export default function CheckoutPage() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const applyDiscount = () => {
-    if (form.discount.toUpperCase() === "DUAL10") {
+    const result = applyDiscountCode(form.discount, cartTotal);
+    if (result.valid) {
       setDiscountApplied(true);
+      setAppliedDiscountAmount(cartTotal - result.finalPrice);
       setDiscountError("");
     } else {
-      setDiscountError("Invalid code. Try DUAL10.");
+      setDiscountApplied(false);
+      setAppliedDiscountAmount(0);
+      setDiscountError("Invalid or inactive discount code.");
     }
   };
 
   const deliveryOption = DELIVERY_OPTIONS.find((d) => d.id === delivery);
   const deliveryPrice = deliveryOption?.price ?? 0;
-  const discount = discountApplied ? cartTotal * 0.1 : 0;
+  const discount = discountApplied ? appliedDiscountAmount : 0;
   const total = cartTotal - discount + deliveryPrice;
 
   const handleSubmit = (e: React.FormEvent) => {

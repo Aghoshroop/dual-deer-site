@@ -32,10 +32,12 @@ export default function FeaturedCollection() {
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault(); // stop Link navigation when clicking the button
     e.stopPropagation();
-    addToCart(product, product.sizes[2] || product.sizes[0]);
+    addToCart(product, product.sizes?.[2] || product.sizes?.[0] || "One Size");
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1800);
   };
+
+  const safeFeatured = featured?.filter(p => p?.id) ?? [];
 
   return (
     <section id="collection" className="py-32 px-6 md:px-12 bg-background relative overflow-hidden">
@@ -74,9 +76,9 @@ export default function FeaturedCollection() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featured.map((product, i) => (
+          {safeFeatured.map((product, i) => (
             <motion.div
-              key={product.id}
+              key={`${product.id}-${i}`}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -101,13 +103,15 @@ export default function FeaturedCollection() {
                   {/* Product image area */}
                   <div className="relative h-64 overflow-hidden"
                     style={{ background: "linear-gradient(180deg, #0e0520 0%, #050508 100%)" }}>
-                    <ProductImage
-                      imageId={product.images[0]}
-                      alt={product.name}
-                      accentColor={product.accentColor}
-                      productId={product.id}
-                      className="absolute inset-0"
-                    />
+                    {product.images?.length > 0 && (
+                      <ProductImage
+                        imageId={product.images[0]}
+                        alt={product.name}
+                        accentColor={product.accentColor}
+                        productId={product.id}
+                        className="absolute inset-0"
+                      />
+                    )}
                     {/* Hover glow overlay */}
                     <div className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
                       style={{

@@ -109,8 +109,8 @@ function FilterPanel({ filters, onChange, onReset, allSizes }: {
       <div>
         <p className="text-[10px] font-mono tracking-widest text-gray-600 mb-3">CATEGORY</p>
         <div className="space-y-1">
-          {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => onChange({ category: cat })}
+          {CATEGORIES.map((cat, index) => (
+            <button key={`cat-${cat}-${index}`} onClick={() => onChange({ category: cat })}
               className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all"
               style={{
                 background: filters.category === cat ? "rgba(157,77,255,0.12)" : "transparent",
@@ -140,10 +140,10 @@ function FilterPanel({ filters, onChange, onReset, allSizes }: {
         <div>
           <p className="text-[10px] font-mono tracking-widest text-gray-600 mb-3">SIZES</p>
           <div className="flex flex-wrap gap-2">
-            {allSizes.map(size => {
+            {(allSizes?.filter(Boolean) ?? []).map((size, index) => {
               const active = filters.sizes.includes(size);
               return (
-                <button key={size} onClick={() => onChange({
+                <button key={`size-${size}-${index}`} onClick={() => onChange({
                   sizes: active ? filters.sizes.filter(s => s !== size) : [...filters.sizes, size]
                 })}
                   className="px-3 py-1 rounded-lg text-xs font-mono transition-all"
@@ -164,8 +164,8 @@ function FilterPanel({ filters, onChange, onReset, allSizes }: {
       <div>
         <p className="text-[10px] font-mono tracking-widest text-gray-600 mb-3">MIN RATING</p>
         <div className="space-y-1">
-          {[0, 4, 4.5, 4.8].map(r => (
-            <button key={r} onClick={() => onChange({ minRating: r })}
+          {[0, 4, 4.5, 4.8].map((r, index) => (
+            <button key={`rating-${r}-${index}`} onClick={() => onChange({ minRating: r })}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all"
               style={{
                 background: filters.minRating === r ? "rgba(157,77,255,0.12)" : "transparent",
@@ -284,8 +284,8 @@ function ShopGridContent() {
         {/* Category Pills (mobile / below desktop sidebar) */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-wrap gap-3 mb-8 lg:hidden">
-          {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => updateFilter({ category: cat })}
+          {CATEGORIES.map((cat, index) => (
+            <button key={`cat-pill-${cat}-${index}`} onClick={() => updateFilter({ category: cat })}
               className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
               style={{
                 background: filters.category === cat ? "linear-gradient(135deg, #6A00FF, #9D4DFF)" : "rgba(255,255,255,0.04)",

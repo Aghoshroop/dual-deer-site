@@ -121,7 +121,7 @@ export async function saveProduct(product: Product): Promise<void> {
 export async function deleteProduct(id: number): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    const ref = doc(db, "products", id.toString());
+    const ref = doc(db, "products", String(id));
     await deleteDoc(ref);
   } catch (e) {
     console.error("Failed to delete product from Firestore", e);
@@ -352,36 +352,36 @@ export function initializeGlobalStoreSync() {
 
   // Sync Products
   onSnapshot(collection(db, "products"), (snapshot) => {
-    if (!snapshot.empty) {
-      const products = snapshot.docs.map((d) => d.data() as Product);
+    const products = snapshot.docs.map((d) => d.data() as Product);
+    if (products.length > 0) {
       save(KEYS.PRODUCTS, products);
-      dispatchStoreEvent("products");
     } else {
       // Seed initial data if absolutely empty
       DEFAULT_PRODUCTS.forEach(p => saveProduct(p));
     }
+    dispatchStoreEvent("products");
   });
 
   // Sync Discounts
   onSnapshot(collection(db, "discounts"), (snapshot) => {
-    if (!snapshot.empty) {
-      const discounts = snapshot.docs.map((d) => d.data() as DiscountCode);
+    const discounts = snapshot.docs.map((d) => d.data() as DiscountCode);
+    if (discounts.length > 0) {
       save(KEYS.DISCOUNTS, discounts);
-      dispatchStoreEvent("discounts");
     } else {
       DEFAULT_DISCOUNTS.forEach(d => saveDiscount(d));
     }
+    dispatchStoreEvent("discounts");
   });
 
   // Sync Offers
   onSnapshot(collection(db, "offers"), (snapshot) => {
-    if (!snapshot.empty) {
-      const offers = snapshot.docs.map((d) => d.data() as Offer);
+    const offers = snapshot.docs.map((d) => d.data() as Offer);
+    if (offers.length > 0) {
       save(KEYS.OFFERS, offers);
-      dispatchStoreEvent("offers");
     } else {
       DEFAULT_OFFERS.forEach(o => saveOffer(o));
     }
+    dispatchStoreEvent("offers");
   });
 }
 
