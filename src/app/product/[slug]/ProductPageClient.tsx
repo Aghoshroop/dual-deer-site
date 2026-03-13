@@ -27,90 +27,6 @@ function useMagnetic(strength = 0.35) {
   return { ref, handleMouseMove, handleMouseLeave };
 }
 
-// ─── Gallery Panel ───────────────────────────────────────────────────────
-function GalleryPanel({
-  label, index, accentColor, isMain,
-}: {
-  label: string; index: number; accentColor: string; isMain?: boolean;
-}) {
-  const patterns = [
-    // front-view orb
-    <div key="front" className="absolute inset-0 flex items-center justify-center">
-      <div className="relative">
-        <div className="w-56 h-56 rounded-full opacity-20 blur-3xl" style={{ background: accentColor }} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-36 h-36 rounded-full opacity-60 blur-xl" style={{ background: accentColor }} />
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-mono text-center opacity-30 px-6 leading-relaxed" style={{ color: accentColor }}>
-            [ {label} ]
-          </span>
-        </div>
-      </div>
-    </div>,
-    // detail grid
-    <div key="detail" className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10">
-        {Array.from({ length: 36 }).map((_, i) => (
-          <div key={i} className="border opacity-30" style={{ borderColor: accentColor }} />
-        ))}
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 rounded-2xl mx-auto mb-4 opacity-40 blur-xl" style={{ background: accentColor }} />
-          <span className="text-xs font-mono opacity-25 block" style={{ color: accentColor }}>[ {label} ]</span>
-        </div>
-      </div>
-    </div>,
-    // athlete silhouette
-    <div key="athlete" className="absolute inset-0 flex items-center justify-center">
-      <div className="relative w-48 h-64">
-        <div className="absolute inset-0 rounded-full blur-3xl opacity-15" style={{ background: accentColor }} />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-full opacity-20" style={{ background: accentColor }} />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full blur-2xl opacity-30" style={{ background: accentColor }} />
-        <div className="absolute inset-0 flex items-end justify-center pb-6">
-          <span className="text-xs font-mono opacity-25" style={{ color: accentColor }}>[ {label} ]</span>
-        </div>
-      </div>
-    </div>,
-    // fabric weave
-    <div key="fabric" className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0" style={{
-        backgroundImage: `repeating-linear-gradient(45deg, ${accentColor}08 0, ${accentColor}08 1px, transparent 0, transparent 50%)`,
-        backgroundSize: "12px 12px",
-      }} />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-xl blur-lg opacity-50" style={{ background: accentColor }} />
-          <p className="text-[10px] font-mono tracking-widest opacity-20" style={{ color: accentColor }}>FABRIC DETAIL</p>
-          <span className="text-xs font-mono opacity-20 block" style={{ color: accentColor }}>[ {label} ]</span>
-        </div>
-      </div>
-    </div>,
-  ];
-
-  return (
-    <div className="relative w-full h-full overflow-hidden rounded-2xl"
-      style={{
-        background: `linear-gradient(145deg, #0e0520 0%, #050508 100%)`,
-        border: `1px solid ${accentColor}20`,
-      }}
-    >
-      <div className="absolute inset-0" style={{
-        background: `radial-gradient(ellipse at ${index % 2 === 0 ? "30% 40%" : "70% 60%"}, ${accentColor}12 0%, transparent 65%)`,
-      }} />
-      {patterns[index % patterns.length]}
-      {isMain && (
-        <div className="absolute top-4 left-4">
-          <span className="text-[9px] font-mono tracking-[0.3em] px-3 py-1 rounded-full"
-            style={{ background: `${accentColor}15`, color: accentColor, border: `1px solid ${accentColor}30` }}>
-            PRODUCT VIEW
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProductPageClient({
@@ -471,8 +387,10 @@ export default function ProductPageClient({
 }
 
 // ─── Parallax Card ──────────────────────────────────────────────────────────
+import { MotionValue } from "framer-motion";
+
 function ParallaxCard({ imageId, index, accentColor, productId, progress }: {
-  imageId: string; index: number; accentColor: string; productId: number; progress: any;
+  imageId: string; index: number; accentColor: string; productId: number; progress: MotionValue<number>;
 }) {
   const y = useTransform(progress, [0, 1], [index * 30, -index * 30]);
   const scale = useTransform(progress, [0, 0.5, 1], [0.95, 1, 0.95]);

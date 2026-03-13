@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import ThreeDCanvas from "./ThreeDCanvas";
+import dynamic from "next/dynamic";
+
+const ThreeDCanvas = dynamic(() => import("./ThreeDCanvas"), { ssr: false });
 
 
 const COLOR_OPTIONS = [

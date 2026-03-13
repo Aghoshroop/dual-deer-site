@@ -285,11 +285,10 @@ function useStreamText(text: string, streaming: boolean, speed = 18) {
 // ─── Message Bubble ──────────────────────────────────────────────────────────
 
 function AgentBubble({
-  message, onAddToCart, accentColor
+  message, onAddToCart
 }: {
   message: Message;
   onAddToCart: (product: Product) => void;
-  accentColor: string;
 }) {
   const displayed = useStreamText(message.text, message.streaming || false);
 
@@ -604,7 +603,7 @@ export default function AIAgent() {
                     </div>
                   </motion.div>
                 ) : (
-                  <AgentBubble key={msg.id} message={msg} onAddToCart={handleAddToCart} accentColor={accentColor} />
+                  <AgentBubble key={msg.id} message={msg} onAddToCart={handleAddToCart} />
                 )
               )}
 

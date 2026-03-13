@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Star, ArrowRight, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
@@ -211,7 +211,7 @@ function FilterPanel({ filters, onChange, onReset, allSizes }: {
 
 // ─── Main ShopGrid ──────────────────────────────────────────────────────────────
 
-export default function ShopGrid() {
+function ShopGridContent() {
   const { addToCart } = useCart();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -442,5 +442,13 @@ export default function ShopGrid() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function ShopGrid() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#050505] py-32 flex items-center justify-center text-white">Loading Shop...</div>}>
+      <ShopGridContent />
+    </Suspense>
   );
 }

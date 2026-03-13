@@ -21,11 +21,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const USER_KEY = "dualdeer_user";
 const ACCOUNTS_KEY = "dualdeer_accounts";
 
-interface StoredAccount {
+export interface StoredAccount {
   name: string;
   email: string;
   password: string; // In production: hashed. Here: plain for demo.
   createdAt: string;
+}
+
+export function getRegisteredAccounts(): StoredAccount[] {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -40,14 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const getAccounts = (): StoredAccount[] => {
-    try {
-      const raw = localStorage.getItem(ACCOUNTS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  };
+  const getAccounts = getRegisteredAccounts;
 
   const login = useCallback((email: string, password: string) => {
     const accounts = getAccounts();

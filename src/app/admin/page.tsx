@@ -17,8 +17,9 @@ import {
 } from "@/lib/store";
 import { Product, DiscountCode, SiteSettings } from "@/lib/products";
 import { saveImage, getImage } from "@/lib/imageStore";
+import { getRegisteredAccounts, StoredAccount } from "@/lib/AuthContext";
 
-type Tab = "overview" | "orders" | "products" | "discounts" | "offers" | "emails" | "settings";
+type Tab = "overview" | "orders" | "products" | "discounts" | "offers" | "emails" | "users" | "settings";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -315,6 +316,7 @@ export default function AdminPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [emails, setEmails] = useState<string[]>([]);
+  const [users, setUsers] = useState<StoredAccount[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [unreadOrders, setUnreadOrders] = useState(0);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
@@ -334,6 +336,7 @@ export default function AdminPage() {
     const o = getOrders();
     setOrders(o);
     setUnreadOrders(o.filter((x) => !x.read).length);
+    setUsers(getRegisteredAccounts());
     try { setEmails(JSON.parse(localStorage.getItem("dualdeer_captured_emails") || "[]")); } catch { /* ignore */ }
   }, []);
 
@@ -420,6 +423,7 @@ export default function AdminPage() {
     { id: "discounts", label: "Discounts", icon: <Tag className="w-4 h-4" /> },
     { id: "offers", label: "Offers", icon: <Megaphone className="w-4 h-4" /> },
     { id: "emails", label: "Emails", icon: <Mail className="w-4 h-4" /> },
+    { id: "users", label: "Users", icon: <Package className="w-4 h-4" /> },
     { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
@@ -814,6 +818,44 @@ export default function AdminPage() {
                       <Mail className="w-4 h-4 flex-shrink-0" style={{ color: "#9D4DFF" }} />
                       <span className="text-sm text-white">{email}</span>
                       <span className="ml-auto text-xs font-mono text-gray-600">#{i + 1}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ── USERS ────────────────────────────────────────────── */}
+          {activeTab === "users" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold">Registered Users</h1>
+                  <p className="text-gray-500 text-sm">{users.length} registered accounts</p>
+                </div>
+              </div>
+              {users.length === 0 ? (
+                <div className="text-center py-16 text-gray-600">
+                  <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p>No users registered yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {users.map((user, i) => (
+                    <div key={i} className="flex items-center gap-4 p-5 rounded-xl"
+                      style={{ background: "rgba(10,5,20,0.8)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0"
+                        style={{ background: "rgba(157,77,255,0.15)", color: "#C084FF" }}>
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-bold">{user.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs text-gray-500 font-mono tracking-wider">JOINED</p>
+                        <p className="text-sm text-gray-300">{new Date(user.createdAt).toLocaleDateString()}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

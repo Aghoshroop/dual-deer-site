@@ -103,7 +103,7 @@ export default function ThreeDCanvas({ colorHex }: Props) {
       });
     }
 
-    let t = 0;
+    let time = 0;
 
     const draw = () => {
       const w = canvas.width;
@@ -191,7 +191,7 @@ export default function ThreeDCanvas({ colorHex }: Props) {
       const stripeW = 28 * chestProj.scale;
       const stripeH = 5 * chestProj.scale;
       ctx.save();
-      ctx.globalAlpha = 0.85 + Math.sin(t * 2) * 0.15;
+      ctx.globalAlpha = 0.85 + Math.sin(time * 2) * 0.15;
       ctx.shadowColor = colorStr;
       ctx.shadowBlur = 12;
       ctx.fillStyle = `rgba(240,240,255,0.9)`;
@@ -201,11 +201,11 @@ export default function ThreeDCanvas({ colorHex }: Props) {
       ctx.restore();
 
       // DualDeer glow orb pulse
-      const orbY = -20 + Math.sin(t * 1.5) * 4;
+      const orbY = -20 + Math.sin(time * 1.5) * 4;
       const orbProj = project(0, orbY, 32, rotY, rotX, w, h);
       const orbR = 6 * orbProj.scale;
       const orbGrd = ctx.createRadialGradient(orbProj.px, orbProj.py, 0, orbProj.px, orbProj.py, orbR * 3);
-      orbGrd.addColorStop(0, `rgba(192,132,255,${0.9 + Math.sin(t * 2) * 0.1})`);
+      orbGrd.addColorStop(0, `rgba(192,132,255,${0.9 + Math.sin(time * 2) * 0.1})`);
       orbGrd.addColorStop(0.5, `rgba(157,77,255,0.4)`);
       orbGrd.addColorStop(1, `rgba(106,0,255,0)`);
       ctx.beginPath();
@@ -217,7 +217,7 @@ export default function ThreeDCanvas({ colorHex }: Props) {
       ctx.fillStyle = "rgba(220,180,255,0.95)";
       ctx.fill();
 
-      t += 0.016;
+      time += 0.016;
       animFrameRef.current = requestAnimationFrame(draw);
     };
 
