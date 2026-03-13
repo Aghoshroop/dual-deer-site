@@ -19,6 +19,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-width: 200px;
 }
 
 /* Custom Scrollbar — violet accent */

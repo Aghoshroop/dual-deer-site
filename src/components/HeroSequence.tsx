@@ -8,16 +8,7 @@ const FRAME_COUNT = 240;
 const currentFrame = (index: number) =>
   `/frames/ezgif-frame-${index.toString().padStart(3, "0")}.jpg`;
 
-// Random particle data (stable — generated once)
-const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  size: Math.random() * 5 + 2,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  delay: Math.random() * 6,
-  duration: 4 + Math.random() * 6,
-  opacity: 0.3 + Math.random() * 0.5,
-}));
+// Random particle data will be generated in useEffect to prevent hydration mismatch
 
 export default function HeroSequence() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,6 +19,21 @@ export default function HeroSequence() {
 
   const [loaded, setLoaded] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [particles, setParticles] = useState<Array<{id: number; size: number; x: number; y: number; delay: number; duration: number; opacity: number;}>>([]);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        size: Math.random() * 5 + 2,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 6,
+        duration: 4 + Math.random() * 6,
+        opacity: 0.3 + Math.random() * 0.5,
+      }))
+    );
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -163,7 +169,7 @@ export default function HeroSequence() {
           className="absolute inset-0 z-0 pointer-events-none"
         >
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full pointer-events-none"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] md:w-[900px] md:h-[900px] rounded-full pointer-events-none"
             style={{
               background: "radial-gradient(ellipse at center, rgba(106,0,255,0.22) 0%, rgba(157,77,255,0.08) 40%, transparent 70%)",
               filter: "blur(40px)",
@@ -173,7 +179,7 @@ export default function HeroSequence() {
 
         {/* Floating energy particles */}
         <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-          {PARTICLES.map((p) => (
+          {particles.map((p) => (
             <motion.div
               key={p.id}
               className="absolute rounded-full"
@@ -237,46 +243,46 @@ export default function HeroSequence() {
         >
           <motion.div style={{ opacity: opacity1 }} className="absolute">
             <h1
-              className="text-6xl md:text-8xl font-bold text-white tracking-widest mb-4"
+              className="text-4xl xxs:text-3xl xs:text-6xl md:text-8xl font-bold text-white tracking-widest mb-2 xs:mb-4"
               style={{ textShadow: "0 0 60px rgba(157,77,255,0.5), 0 0 120px rgba(106,0,255,0.3)" }}
             >
               DUALDEER
             </h1>
-            <p className="text-xl md:text-3xl text-gradient">
+            <p className="text-base xxs:text-xs xs:text-xl md:text-3xl text-gradient">
               Engineered for speed.
             </p>
           </motion.div>
 
           <motion.div style={{ opacity: opacity2 }} className="absolute">
             <h2
-              className="text-5xl md:text-7xl text-white mb-4 font-bold"
+              className="text-3xl xxs:text-xl xs:text-4xl md:text-7xl text-white mb-2 xs:mb-4 font-bold"
               style={{ textShadow: "0 0 40px rgba(157,77,255,0.4)" }}
             >
               Precision Compression.
             </h2>
-            <p className="text-xl md:text-2xl" style={{ color: "#C084FF" }}>
+            <p className="text-sm xxs:text-xs xs:text-xl md:text-2xl" style={{ color: "#C084FF" }}>
               Engineered muscle support.
             </p>
           </motion.div>
 
           <motion.div style={{ opacity: opacity3 }} className="absolute">
             <h2
-              className="text-5xl md:text-7xl text-white max-w-4xl font-bold"
+              className="text-3xl xxs:text-xl xs:text-4xl md:text-7xl text-white max-w-4xl font-bold"
               style={{ textShadow: "0 0 40px rgba(157,77,255,0.4)" }}
             >
               Built for athletes who move faster.
             </h2>
           </motion.div>
 
-          <motion.div style={{ opacity: opacity4 }} className="absolute mt-32">
+          <motion.div style={{ opacity: opacity4 }} className="absolute mt-16 md:mt-32">
             <h2
-              className="text-6xl md:text-8xl font-bold text-white mb-8"
+              className="text-4xl xxs:text-2xl xs:text-5xl md:text-8xl font-bold text-white mb-4 md:mb-8"
               style={{ textShadow: "0 0 60px rgba(157,77,255,0.5)" }}
             >
               Unleash Maximum Velocity.
             </h2>
             <button
-              className="pointer-events-auto px-8 py-4 font-semibold rounded-full transition-all shadow-lg text-white"
+              className="pointer-events-auto px-4 py-2 xxs:px-3 xxs:py-1.5 xxs:text-xs xs:px-6 xs:py-3 md:px-8 md:py-4 font-semibold rounded-full transition-all shadow-lg text-white"
               style={{
                 background: "linear-gradient(135deg, #6A00FF, #9D4DFF)",
                 boxShadow: "0 0 40px rgba(106,0,255,0.5), 0 0 80px rgba(106,0,255,0.2)",

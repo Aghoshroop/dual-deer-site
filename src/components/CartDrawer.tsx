@@ -41,7 +41,7 @@ export default function CartDrawer() {
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+            <div className="flex items-center justify-between px-3 xs:px-6 py-3 xs:py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-5 h-5" style={{ color: "#9D4DFF" }} />
                 <span className="font-bold text-white">
@@ -60,7 +60,7 @@ export default function CartDrawer() {
             </div>
 
             {/* Items */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-3 xs:px-6 py-4 space-y-4">
               {cart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-20">
                   <ShoppingBag className="w-14 h-14 mb-4" style={{ color: "rgba(157,77,255,0.25)" }} />
@@ -187,7 +187,7 @@ export default function CartDrawer() {
 
             {/* Footer */}
             {cart.length > 0 && (
-              <div className="px-6 py-5 border-t space-y-4" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+              <div className="px-3 xs:px-6 py-3 xs:py-5 border-t space-y-4" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                 {/* Subtotal */}
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400 text-sm">Subtotal</span>

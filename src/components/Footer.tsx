@@ -50,9 +50,9 @@ export default function Footer() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 xs:px-6 md:px-12 pt-8 xs:pt-16 pb-8 relative z-10">
         {/* Top row: Logo + Socials */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 pb-10"
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 xs:mb-12 pb-8 xs:pb-10"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
           <div>
             <div className="text-2xl font-bold tracking-tight text-white mb-2">
@@ -89,7 +89,7 @@ export default function Footer() {
         </div>
 
         {/* Link columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <p className="text-xs font-mono tracking-[0.2em] mb-4" style={{ color: "#9D4DFF" }}>
@@ -114,10 +114,10 @@ export default function Footer() {
 
         {/* Bottom: copyright */}
         <div
-          className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-xs font-mono text-gray-700"
+          className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 xs:pt-8 text-xs font-mono text-gray-700 text-center md:text-left"
           style={{ borderTop: "1px solid rgba(255,255,255,0.03)" }}
         >
-          <span>© {new Date().getFullYear()} DUALDEER PERFORMANCE LAB. ALL RIGHTS RESERVED.</span>
+          <span>© {new Date().getFullYear()} DUALDEER LAB. ALL RIGHTS RESERVED.</span>
           <div className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#9D4DFF" }} />
             <span>ENGINEERED FOR SPEED</span>

@@ -64,10 +64,10 @@ export default function Navbar() {
           borderBottom: scrolled ? "1px solid rgba(157,77,255,0.1)" : "none",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-2 xs:px-6 md:px-10 py-3 xs:py-4 flex flex-wrap items-center justify-between gap-y-2">
 
           {/* Logo */}
-          <Link href="/" className="text-xl font-black tracking-tight text-white hover:opacity-80 transition-opacity z-10">
+          <Link href="/" className="text-sm xs:text-xl font-black tracking-tight text-white hover:opacity-80 transition-opacity z-10">
             DUALDEER<span style={{ background: "linear-gradient(135deg,#9D4DFF,#C084FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>.</span>
           </Link>
 
@@ -138,12 +138,12 @@ export default function Navbar() {
           </div>
 
           {/* Right: Search + Auth + Cart + Mobile toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 xs:gap-2">
 
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-gray-400 hover:text-white transition-all"
+              className="flex items-center gap-1 xs:gap-2 px-2 py-1.5 xs:px-3 xs:py-2 rounded-xl text-gray-400 hover:text-white transition-all"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
               aria-label="Search"
             >
@@ -211,7 +211,7 @@ export default function Navbar() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="relative p-2 text-gray-400 hover:text-white transition-colors rounded-xl hover:bg-white/[0.04]"
+              className="relative p-1 xs:p-2 text-gray-400 hover:text-white transition-colors rounded-xl hover:bg-white/[0.04]"
               aria-label="Cart"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -228,7 +228,7 @@ export default function Navbar() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden p-2 text-gray-400 hover:text-white transition-colors rounded-xl hover:bg-white/[0.04]"
+              className="md:hidden p-1 xs:p-2 text-gray-400 hover:text-white transition-colors rounded-xl hover:bg-white/[0.04]"
               aria-label="Menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
