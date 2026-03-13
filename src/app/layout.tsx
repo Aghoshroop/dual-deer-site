@@ -13,35 +13,49 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: {
-    default: "DualDeer | Elite Performance Activewear",
-    template: "%s | DualDeer",
+    default: "DualDeer | #1 Best Activewear & Performance Compression Suits Online",
+    template: "%s | DualDeer — Best Activewear Online",
   },
   description:
-    "Discover DualDeer — premium carbon-fiber compression suits engineered for elite speed, endurance, and performance. Worn by world-class athletes. Shop speed suits, compression gear & recovery apparel.",
+    "DualDeer is rated the #1 best activewear brand online. Shop elite carbon-fiber compression suits, speed suits, training tights, and recovery gear — engineered for world-class athletes. Free shipping over $200.",
   keywords: [
-    "performance compression suit",
-    "elite activewear",
-    "speed training suit",
-    "athletic compression wear",
-    "premium sportswear",
-    "DualDeer",
-    "carbon fiber suit",
-    "compression tights",
-    "speed suit",
-    "running compression",
-    "athletic performance wear",
-    "elite sport compression",
+    // Brand
+    "DualDeer", "DualDeer performance lab", "DualDeer activewear",
+    // Best activewear intent
+    "best activewear online", "best activewear brand", "top rated activewear", "best performance activewear",
+    "best activewear 2024", "best activewear 2025", "best activewear for athletes",
+    // Compression suits
+    "best compression suit", "elite compression suit", "performance compression suit",
+    "compression suit for running", "compression suit for athletes", "athletic compression wear",
+    "carbon fiber compression suit", "speed suit compression",
+    // Speed suits
+    "speed suit", "speed training suit", "elite speed suit", "best speed suit online",
+    "performance speed suit", "sprint suit",
+    // Sportswear / activewear
+    "premium sportswear", "elite sportswear", "performance sportswear online",
+    "luxury activewear", "high performance activewear", "activewear for elite athletes",
+    "buy activewear online", "shop performance sportswear",
+    // Product-level
+    "compression tights", "training tights", "compression top", "athletic shorts",
+    "muscle recovery sleeve", "recovery compression gear",
+    // Tech-driven intent
+    "carbon fiber sportswear", "AI biomechanics activewear", "zero drag compression suit",
+    "wind tunnel tested sportswear",
   ],
   authors: [{ name: "DualDeer Performance Lab" }],
   creator: "DualDeer Performance Lab",
   publisher: "DualDeer Performance Lab",
+  applicationName: "DualDeer Performance Lab",
+  referrer: "origin-when-cross-origin",
   metadataBase: new URL("https://www.dualdeer.com"),
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
+      noimageindex: false,
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
@@ -52,33 +66,41 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.dualdeer.com",
     siteName: "DualDeer Performance Lab",
-    title: "DualDeer | Elite Performance Activewear",
+    title: "DualDeer | #1 Best Activewear & Performance Compression Suits Online",
     description:
-      "Premium carbon-fiber compression suits engineered for world-class athletes. Built for those who refuse to slow down.",
+      "The best activewear brand online — elite carbon-fiber compression suits and speed suits engineered for world-class athletes. Rated #1 for performance sportswear.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "DualDeer Elite Performance Activewear",
+        alt: "DualDeer — Best Performance Activewear Online",
+        type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DualDeer | Elite Performance Activewear",
+    site: "@dualdeer",
+    title: "DualDeer | #1 Best Activewear & Performance Compression Suits Online",
     description:
-      "Premium carbon-fiber compression suits engineered for world-class athletes.",
+      "The best activewear brand online. Elite carbon-fiber compression suits engineered for world-class athletes.",
     creator: "@dualdeer",
     images: ["/og-image.png"],
   },
   alternates: {
     canonical: "https://www.dualdeer.com",
+    languages: {
+      "en-US": "https://www.dualdeer.com",
+    },
   },
   verification: {
     google: "your-google-verification-code",
   },
   category: "sports equipment",
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -94,6 +116,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#050508" />
         <meta name="color-scheme" content="dark" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Preload critical fonts */}
+        <link rel="preload" as="font" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body
         className={`${inter.variable} ${outfit.variable} bg-background text-foreground antialiased`}

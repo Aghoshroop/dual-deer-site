@@ -1,14 +1,36 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Our Story — DualDeer",
-  description: "DualDeer was born from a single obsession: speed. Discover how we built the world's most technically advanced performance activewear from garage to global.",
+  title: "Our Story — Built from Obsession | DualDeer Best Activewear",
+  description:
+    "DualDeer was born at 2am in a garage, with two elite athletes who refused to accept slow sportswear. Discover how we built the world's most technically advanced activewear brand from the ground up.",
+  keywords: [
+    "DualDeer brand story", "best activewear brand history", "performance sportswear founders",
+    "elite activewear engineering", "DualDeer mission", "carbon fiber activewear brand",
+  ],
+  openGraph: {
+    title: "Our Story — Built from Obsession | DualDeer",
+    description: "From a garage at 2am to the world's most technically advanced activewear. The DualDeer story.",
+    url: "https://www.dualdeer.com/story",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "DualDeer Brand Story" }],
+  },
   alternates: { canonical: "https://www.dualdeer.com/story" },
 };
 
 export default function StoryPage() {
   return (
     <main className="bg-[#050508] min-h-screen">
+      {/* Organization + BreadcrumbList schemas for the About page */}
+      <JsonLd type="organization" />
+      <JsonLd
+        type="breadcrumb"
+        items={[
+          { name: "Home", url: "https://www.dualdeer.com" },
+          { name: "Our Story", url: "https://www.dualdeer.com/story" },
+        ]}
+      />
+
       {/* Hero */}
       <section className="relative pt-36 pb-24 px-6 md:px-12 overflow-hidden">
         <div
@@ -96,7 +118,7 @@ export default function StoryPage() {
               className="inline-flex items-center gap-3 px-10 py-4 rounded-full text-white font-black text-sm"
               style={{ background: "linear-gradient(135deg, #6A00FF, #9D4DFF)", boxShadow: "0 0 40px rgba(106,0,255,0.35)" }}
             >
-              Shop the Collection →
+              Shop the Best Activewear →
             </a>
           </div>
         </div>

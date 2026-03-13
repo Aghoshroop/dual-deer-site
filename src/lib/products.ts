@@ -53,6 +53,8 @@ export interface SiteSettings {
   accentColor: string;
   announcementText: string;
   showAnnouncement: boolean;
+  /** Optional image (base64 data URL or imageStore ID) for the Performance Architecture section */
+  performanceImage?: string;
 }
 
 export const DEFAULT_PRODUCTS: Product[] = [

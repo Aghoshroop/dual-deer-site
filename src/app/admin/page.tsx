@@ -893,6 +893,56 @@ export default function AdminPage() {
                   <input className={inp} style={inpStyle} value={settings.tagline}
                     onChange={e => setSettings(s => s ? { ...s, tagline: e.target.value } : s)} />
                 </div>
+
+                {/* ── Performance Architecture Section Image ── */}
+                <div className="pt-2">
+                  <label className="text-xs text-gray-400 mb-1 block">Performance Architecture Section Image</label>
+                  <p className="text-[10px] text-gray-600 mb-3">Replaces the placeholder grid in the &quot;Speed is engineered&quot; section on the homepage. JPG/PNG/WebP, max 5MB.</p>
+
+                  {settings.performanceImage ? (
+                    <div className="relative w-full h-40 rounded-xl overflow-hidden mb-2 group"
+                      style={{ border: "1px solid rgba(157,77,255,0.25)" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={settings.performanceImage}
+                        alt="Performance section"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => setSettings(s => s ? { ...s, performanceImage: undefined } : s)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                      <div className="absolute bottom-2 left-2 text-[10px] font-mono text-white/60 bg-black/40 px-2 py-0.5 rounded">
+                        ✓ Image set — hover to remove
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      className="flex flex-col items-center justify-center w-full h-32 rounded-xl cursor-pointer transition-all hover:border-purple-500"
+                      style={{ border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
+                    >
+                      <Upload className="w-6 h-6 text-gray-500 mb-2" />
+                      <span className="text-xs text-gray-500">Click to upload performance image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) { alert("Max file size is 5MB."); return; }
+                          const { saveImage, getImage } = await import("@/lib/imageStore");
+                          const id = await saveImage(file);
+                          const url = await getImage(id);
+                          if (url) setSettings(s => s ? { ...s, performanceImage: url } : s);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
                 <button onClick={handleSaveSettings}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white text-sm transition-all hover:scale-105"
                   style={{ background: "linear-gradient(135deg, #6A00FF, #9D4DFF)", boxShadow: "0 0 16px rgba(106,0,255,0.3)" }}>
