@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import ShopGrid from "@/components/ShopGrid";
+import ShopHero from "@/components/ShopHero";
 import JsonLd from "@/components/JsonLd";
 import { DEFAULT_PRODUCTS } from "@/lib/products";
 
@@ -55,6 +56,9 @@ export default function ShopPage() {
           { name: "Shop", url: "https://www.dualdeer.com/shop" },
         ]}
       />
+      <Suspense fallback={<div className="py-32 text-center text-gray-600">Loading...</div>}>
+        <ShopHero />
+      </Suspense>
       <Suspense fallback={<div className="py-32 text-center text-gray-600">Loading products...</div>}>
         <ShopGrid />
       </Suspense>

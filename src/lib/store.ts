@@ -2,11 +2,12 @@
  * DualDeer Dynamic Store
  * All data stored in localStorage — zero cost, no backend needed.
  * Automatically seeds from DEFAULT_PRODUCTS on first load.
+ *
+ * NOTE: Firebase is imported DYNAMICALLY inside async functions only.
+ * This keeps this module fully SSR-safe (no browser-only code at module level).
  */
 
 import { DEFAULT_PRODUCTS, Product, DiscountCode, SiteSettings } from "./products";
-import { db } from "./firebase";
-import { collection, doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 
 const KEYS = {
   PRODUCTS: "dd_products_v2",
@@ -79,23 +80,62 @@ function save<T>(key: string, value: T): void {
   }
 }
 
-// ─── Firestore Helpers ────────────────────────────────────────────────────────
-
 /** Strips fields with `undefined` values — Firestore rejects them. */
 function sanitize<T extends object>(obj: T): T {
   return JSON.parse(JSON.stringify(obj)) as T;
 }
 
+/** Lazy firebase getter — only imports when called (client-only) */
+async function getFirebase() {
+  const [{ db }, { doc, collection, setDoc, deleteDoc, onSnapshot }] = await Promise.all([
+    import("./firebase"),
+    import("firebase/firestore"),
+  ]);
+  return { db, doc, collection, setDoc, deleteDoc, onSnapshot };
+}
+
 // ─── Product Store ─────────────────────────────────────────────────────────────
+
+/** Ensure all arrays and required fields exist to prevent undefined crashes */
+function normalizeProduct(p: Partial<Product>): Product {
+  return {
+    ...p,
+    images: Array.isArray(p.images) ? p.images : [],
+    sizes: Array.isArray(p.sizes) ? p.sizes : ["S", "M", "L", "XL"],
+    technology: Array.isArray(p.technology) ? p.technology : [],
+    related: Array.isArray(p.related) ? p.related : [],
+    colors: Array.isArray(p.colors) ? p.colors : [],
+    features: Array.isArray(p.features) ? p.features : [],
+    reviewsList: Array.isArray(p.reviewsList) ? p.reviewsList : [],
+    accentColor: p.accentColor || "#9D4DFF",
+    rating: p.rating || 4.5,
+    reviews: p.reviews || 0,
+    inStock: typeof p.inStock === "boolean" ? p.inStock : true,
+    name: p.name || "Product",
+    slug: p.slug || `product-${p.id}`,
+    category: p.category || "Performance Gear",
+    description: p.description || "",
+    longDescription: p.longDescription || "",
+    id: p.id || Date.now(),
+    price: p.price || 0,
+  } as Product;
+}
 
 export function getProducts(): Product[] {
   const stored = load<Product[] | null>(KEYS.PRODUCTS, null);
-  if (!stored) {
-    // Seed with defaults on first ever load
+  if (!stored || !Array.isArray(stored) || stored.length === 0) {
     save(KEYS.PRODUCTS, DEFAULT_PRODUCTS);
     return DEFAULT_PRODUCTS;
   }
-  return stored;
+  const hasCorruptData = stored.some(
+    (p) => !p || !Array.isArray((p as Product).images)
+  );
+  if (hasCorruptData) {
+    console.warn("[store] Detected corrupt product data in localStorage — reseeding from defaults.");
+    save(KEYS.PRODUCTS, DEFAULT_PRODUCTS);
+    return DEFAULT_PRODUCTS;
+  }
+  return stored.map(normalizeProduct);
 }
 
 export function getProductBySlug(slug: string): Product | undefined {
@@ -118,6 +158,7 @@ export function getRelatedProducts(product: Product): Product[] {
 export async function saveProduct(product: Product): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, setDoc } = await getFirebase();
     const ref = doc(db, "products", product.id.toString());
     await setDoc(ref, sanitize(product));
   } catch (e) {
@@ -128,6 +169,7 @@ export async function saveProduct(product: Product): Promise<void> {
 export async function deleteProduct(id: number): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, deleteDoc } = await getFirebase();
     const ref = doc(db, "products", String(id));
     await deleteDoc(ref);
   } catch (e) {
@@ -136,7 +178,6 @@ export async function deleteProduct(id: number): Promise<void> {
 }
 
 export function generateProductId(): number {
-  // Use timestamp-based ID to guarantee uniqueness even before Firestore syncs
   return Date.now();
 }
 
@@ -163,6 +204,7 @@ export function getDiscounts(): DiscountCode[] {
 export async function saveDiscount(code: DiscountCode): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, setDoc } = await getFirebase();
     const ref = doc(db, "discounts", code.code.toUpperCase());
     await setDoc(ref, sanitize(code));
   } catch (e) {
@@ -173,6 +215,7 @@ export async function saveDiscount(code: DiscountCode): Promise<void> {
 export async function deleteDiscount(code: string): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, deleteDoc } = await getFirebase();
     const ref = doc(db, "discounts", code.toUpperCase());
     await deleteDoc(ref);
   } catch (e) {
@@ -215,6 +258,7 @@ export function getActiveOffer(): Offer | null {
 export async function saveOffer(offer: Offer): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, setDoc } = await getFirebase();
     const ref = doc(db, "offers", offer.id);
     await setDoc(ref, sanitize(offer));
   } catch (e) {
@@ -225,6 +269,7 @@ export async function saveOffer(offer: Offer): Promise<void> {
 export async function deleteOffer(id: string): Promise<void> {
   if (typeof window === "undefined") return;
   try {
+    const { db, doc, deleteDoc } = await getFirebase();
     const ref = doc(db, "offers", id);
     await deleteDoc(ref);
   } catch (e) {
@@ -249,8 +294,8 @@ export function getSettings(): SiteSettings {
 export async function saveSettings(settings: SiteSettings): Promise<void> {
   save(KEYS.SETTINGS, settings);
   dispatchStoreEvent("settings");
-  // Persist non-image fields to Firestore (performanceImage is synced separately via savePerformanceImage)
   try {
+    const { db, doc, setDoc } = await getFirebase();
     const { performanceImage: _omit, ...firestoreSafe } = settings;
     await setDoc(doc(db, "settings", "global"), sanitize(firestoreSafe), { merge: true });
   } catch (e) {
@@ -258,14 +303,10 @@ export async function saveSettings(settings: SiteSettings): Promise<void> {
   }
 }
 
-/**
- * Saves the ImgBB CDN URL to Firestore `settings/global.performanceImage`.
- * All devices listening via onSettingsUpdate() will receive the update instantly.
- */
 export async function savePerformanceImage(imgbbUrl: string): Promise<void> {
   try {
+    const { db, doc, setDoc } = await getFirebase();
     await setDoc(doc(db, "settings", "global"), { performanceImage: imgbbUrl }, { merge: true });
-    // Also cache locally so we don't re-fetch on the same device
     const current = getSettings();
     save(KEYS.SETTINGS, { ...current, performanceImage: imgbbUrl });
     dispatchStoreEvent("settings");
@@ -275,11 +316,9 @@ export async function savePerformanceImage(imgbbUrl: string): Promise<void> {
   }
 }
 
-/**
- * Clears the performance image from Firestore and localStorage.
- */
 export async function clearPerformanceImage(): Promise<void> {
   try {
+    const { db, doc, setDoc } = await getFirebase();
     await setDoc(doc(db, "settings", "global"), { performanceImage: null }, { merge: true });
     const current = getSettings();
     const updated = { ...current };
@@ -292,22 +331,19 @@ export async function clearPerformanceImage(): Promise<void> {
   }
 }
 
-/**
- * Subscribe to real-time Firestore settings updates.
- * Returns an unsubscribe function. Used by PerformanceSection.
- */
 export function onSettingsUpdate(callback: (data: Partial<SiteSettings>) => void): () => void {
   if (typeof window === "undefined") return () => {};
-  const unsubscribe = onSnapshot(
-    doc(db, "settings", "global"),
-    (snap) => {
-      if (snap.exists()) {
-        callback(snap.data() as Partial<SiteSettings>);
-      }
-    },
-    (err) => console.error("[store] Settings snapshot error:", err)
-  );
-  return unsubscribe;
+  let unsubscribe: (() => void) | null = null;
+  getFirebase().then(({ db, doc, onSnapshot }) => {
+    unsubscribe = onSnapshot(
+      doc(db, "settings", "global"),
+      (snap) => {
+        if (snap.exists()) callback(snap.data() as Partial<SiteSettings>);
+      },
+      (err) => console.error("[store] Settings snapshot error:", err)
+    );
+  });
+  return () => { if (unsubscribe) unsubscribe(); };
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────
@@ -352,7 +388,7 @@ export function getOrders(): Order[] {
 
 export function saveOrder(order: Order): void {
   const orders = getOrders();
-  orders.unshift(order); // newest first
+  orders.unshift(order);
   save(KEYS.ORDERS, orders);
   dispatchStoreEvent("orders");
 }
@@ -416,43 +452,52 @@ export function initializeGlobalStoreSync() {
   if (typeof window === "undefined" || isStoreInitialized) return;
   isStoreInitialized = true;
 
-  // Sync Products
-  onSnapshot(collection(db, "products"), (snapshot) => {
-    const products = snapshot.docs.map((d) => d.data() as Product);
-    if (products.length > 0) {
-      save(KEYS.PRODUCTS, products);
-    } else {
-      // Seed initial data if absolutely empty
-      DEFAULT_PRODUCTS.forEach(p => saveProduct(p));
-    }
-    dispatchStoreEvent("products");
-  });
+  getFirebase()
+    .then(({ db, collection, onSnapshot }) => {
 
-  // Sync Discounts
-  onSnapshot(collection(db, "discounts"), (snapshot) => {
-    const discounts = snapshot.docs.map((d) => d.data() as DiscountCode);
-    if (discounts.length > 0) {
-      save(KEYS.DISCOUNTS, discounts);
-    } else {
-      DEFAULT_DISCOUNTS.forEach(d => saveDiscount(d));
-    }
-    dispatchStoreEvent("discounts");
-  });
+      // Products
+      onSnapshot(collection(db, "products"), (snapshot) => {
+        const products = snapshot.docs.map((d) =>
+          normalizeProduct(d.data() as Partial<Product>)
+        );
 
-  // Sync Offers
-  onSnapshot(collection(db, "offers"), (snapshot) => {
-    const offers = snapshot.docs.map((d) => d.data() as Offer);
-    if (offers.length > 0) {
-      save(KEYS.OFFERS, offers);
-    } else {
-      DEFAULT_OFFERS.forEach(o => saveOffer(o));
-    }
-    dispatchStoreEvent("offers");
-  });
+        if (products.length > 0) {
+          save(KEYS.PRODUCTS, products);
+        }
+
+        dispatchStoreEvent("products");
+      });
+
+      // Discounts
+      onSnapshot(collection(db, "discounts"), (snapshot) => {
+        const discounts = snapshot.docs.map((d) => d.data() as DiscountCode);
+
+        if (discounts.length > 0) {
+          save(KEYS.DISCOUNTS, discounts);
+        }
+
+        dispatchStoreEvent("discounts");
+      });
+
+      // Offers
+      onSnapshot(collection(db, "offers"), (snapshot) => {
+        const offers = snapshot.docs.map((d) => d.data() as Offer);
+
+        if (offers.length > 0) {
+          save(KEYS.OFFERS, offers);
+        }
+
+        dispatchStoreEvent("offers");
+      });
+
+    })
+    .catch((err) => {
+      console.error("[store] Firebase sync failed:", err);
+    });
 }
 
 // Auto-run on client mount
-if (typeof window !== "undefined") {
+export function startStoreSync() {
+  if (typeof window === "undefined") return;
   initializeGlobalStoreSync();
 }
-

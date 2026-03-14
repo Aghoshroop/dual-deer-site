@@ -121,6 +121,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Preload critical fonts */}
         <link rel="preload" as="font" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" type="font/woff2" crossOrigin="anonymous" />
+        {/* Self-healing: clear corrupt product data before React mounts */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var stored = JSON.parse(localStorage.getItem('dd_products_v2') || 'null');
+              if (stored && Array.isArray(stored)) {
+                var corrupt = stored.some(function(p){
+                  return !p || !Array.isArray(p.images) || !p.accentColor || !p.id;
+                });
+                if (corrupt) { localStorage.removeItem('dd_products_v2'); }
+              }
+            } catch(e) { localStorage.removeItem('dd_products_v2'); }
+          })();
+        ` }} />
       </head>
       <body
         className={`${inter.variable} ${outfit.variable} bg-background text-foreground antialiased`}
