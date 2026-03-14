@@ -250,7 +250,7 @@ function ShopGridContent() {
     setFilters(f => ({ ...f, ...partial }));
 
   return (
-    <section id="shop" className="py-32 px-6 md:px-12 relative overflow-hidden" style={{ background: "#050505" }}>
+    <section id="shop" className="py-16 md:py-32 px-4 md:px-12 relative overflow-hidden" style={{ background: "#050505" }}>
       {/* Background ambient glow */}
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{ background: "radial-gradient(ellipse at bottom right, rgba(106,0,255,0.08) 0%, transparent 70%)" }} />
@@ -258,10 +258,10 @@ function ShopGridContent() {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          transition={{ duration: 0.8 }} className="mb-12">
-          <p className="text-xs font-mono tracking-[0.3em] mb-4" style={{ color: "#9D4DFF" }}>SHOP ALL</p>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <h2 className="text-4xl md:text-6xl font-bold text-white">
+          transition={{ duration: 0.8 }} className="mb-8 md:mb-12">
+          <p className="text-xs font-mono tracking-[0.3em] mb-3 md:mb-4" style={{ color: "#9D4DFF" }}>SHOP ALL</p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <h2 className="text-3xl md:text-6xl font-bold text-white">
               The Full <span className="text-gradient">Arsenal.</span>
             </h2>
             <div className="flex items-center gap-3">
@@ -273,20 +273,20 @@ function ShopGridContent() {
               <span className="text-gray-500 text-sm">{filtered.length} products</span>
               <button
                 onClick={() => setFilterOpen(o => !o)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all lg:hidden"
+                className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium transition-all lg:hidden"
                 style={{ background: "rgba(157,77,255,0.1)", color: "#C084FF", border: "1px solid rgba(157,77,255,0.2)" }}>
-                <SlidersHorizontal className="w-4 h-4" /> Filters
+                <SlidersHorizontal className="w-3.5 h-3.5 md:w-4 md:h-4" /> Filters
               </button>
             </div>
           </div>
         </motion.div>
 
-        {/* Category Pills (mobile / below desktop sidebar) */}
+        {/* Category Pills */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-wrap gap-3 mb-8 lg:hidden">
+          transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-wrap gap-2 mb-6 lg:hidden">
           {CATEGORIES.map((cat, index) => (
             <button key={`cat-pill-${cat}-${index}`} onClick={() => updateFilter({ category: cat })}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300"
+              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300"
               style={{
                 background: filters.category === cat ? "linear-gradient(135deg, #6A00FF, #9D4DFF)" : "rgba(255,255,255,0.04)",
                 color: filters.category === cat ? "#fff" : "#9ca3af",
@@ -337,7 +337,8 @@ function ShopGridContent() {
                   className="text-sm mt-2 underline" style={{ color: "#9D4DFF" }}>Clear all filters</button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              /* ── 2-col on mobile, 2-col on sm, 3-col on xl ── */
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-5">
                 {filtered.map((product, i) => {
                   const isHovered = hoveredId === product.id;
                   const isAdded = addedIds.includes(product.id);
@@ -350,37 +351,45 @@ function ShopGridContent() {
                       transition={{ duration: 0.4, delay: i * 0.05 }}
                       onMouseEnter={() => setHoveredId(product.id)}
                       onMouseLeave={() => setHoveredId(null)}
-                      className="rounded-2xl overflow-hidden relative group"
+                      className="rounded-xl md:rounded-2xl overflow-hidden relative group"
                       style={{
                         background: "linear-gradient(180deg, #0A0A12 0%, #050508 100%)",
                         border: isHovered ? `1px solid ${product.accentColor}45` : "1px solid rgba(255,255,255,0.05)",
-                        transform: isHovered ? "translateY(-6px)" : "translateY(0)",
                         transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                         boxShadow: isHovered ? `0 20px 50px ${product.accentColor}25` : "none",
                       }}
                     >
+                      {/* Badge */}
                       {product.badge && (
-                        <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded text-[9px] font-mono tracking-widest font-bold"
+                        <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-mono tracking-widest font-bold"
                           style={{ background: `${product.accentColor}20`, color: product.accentColor, border: `1px solid ${product.accentColor}40` }}>
                           {product.badge}
                         </div>
                       )}
 
                       <Link href={`/product/${product.slug}`} className="block">
-                        {/* Image area */}
-                        <div className="relative h-52 overflow-hidden"
-                          style={{ background: "linear-gradient(135deg, #0e0818 0%, #050508 100%)" }}>
-                          <ProductImage
-                            imageId={product.images[0]}
-                            alt={product.name}
-                            accentColor={product.accentColor}
-                            productId={product.id}
-                            className="absolute inset-0"
-                          />
-                          {/* Hover scale overlay */}
-                          <div className="absolute inset-0 transition-opacity duration-500"
+                        {/* ── Image: portrait 4:5 ratio (Nike/Adidas standard) ── */}
+                        <div className="relative w-full overflow-hidden"
+                          style={{
+                            paddingBottom: "125%", // 4:5 portrait ratio
+                            background: "linear-gradient(135deg, #0e0818 0%, #050508 100%)"
+                          }}>
+                          <div className="absolute inset-0">
+                            <ProductImage
+                              imageId={product.images[0]}
+                              alt={product.name}
+                              accentColor={product.accentColor}
+                              productId={product.id}
+                              className="absolute inset-0"
+                            />
+                          </div>
+                          {/* Accent glow on hover — desktop only */}
+                          <div className="hidden md:block absolute inset-0 transition-opacity duration-500"
                             style={{ background: `radial-gradient(ellipse at center, ${product.accentColor}12 0%, transparent 65%)`, opacity: isHovered ? 1 : 0 }} />
-                          <motion.div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 pb-3 z-10"
+
+                          {/* Quick add — appears on hover (desktop) */}
+                          <motion.div
+                            className="hidden md:flex absolute inset-x-0 bottom-0 items-center justify-center gap-2 pb-3 z-10"
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
                             transition={{ duration: 0.2 }}>
@@ -392,43 +401,56 @@ function ShopGridContent() {
                               }}>
                               {isAdded ? "✓ Added" : <><ShoppingBag className="w-3 h-3" /> Quick Add</>}
                             </button>
-                            <span className="text-[10px] font-mono flex items-center gap-1" style={{ color: `${product.accentColor}90` }}>
-                              View <ArrowRight className="w-3 h-3" />
-                            </span>
                           </motion.div>
                         </div>
 
-                        {/* Product info */}
-                        <div className="p-4">
-                          <h3 className="text-white font-semibold mb-2 text-sm group-hover:opacity-80 transition-opacity">
+                        {/* ── Card info: compact on mobile, fuller on desktop ── */}
+                        <div className="p-2.5 md:p-4">
+                          {/* Product name — 1 line on mobile */}
+                          <h3 className="text-white font-semibold text-xs md:text-sm leading-tight mb-1 md:mb-2 truncate">
                             {product.name}
                           </h3>
-                          <div className="flex items-center gap-1.5 mb-3">
+
+                          {/* Stars — mobile: tiny single row */}
+                          <div className="flex items-center gap-1 mb-1.5 md:mb-3">
                             <div className="flex gap-0.5">
                               {Array.from({ length: 5 }).map((_, idx) => (
-                                <Star key={idx} className="w-3 h-3"
+                                <Star key={idx} className="w-2.5 h-2.5 md:w-3 md:h-3"
                                   fill={idx < Math.floor(product.rating) ? product.accentColor : "transparent"}
                                   stroke={product.accentColor} strokeWidth={1.5} />
                               ))}
                             </div>
-                            <span className="text-xs text-gray-500">({product.reviews})</span>
+                            <span className="text-[10px] md:text-xs text-gray-500 hidden sm:inline">({product.reviews})</span>
                           </div>
+
+                          {/* Price row + mobile add button */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-lg" style={{ color: product.accentColor }}>${product.price}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-sm md:text-lg" style={{ color: product.accentColor }}>
+                                ${product.price}
+                              </span>
                               {product.originalPrice && (
-                                <span className="text-gray-600 text-sm line-through">${product.originalPrice}</span>
+                                <span className="text-gray-600 text-xs line-through hidden sm:inline">
+                                  ${product.originalPrice}
+                                </span>
                               )}
                             </div>
-                            <button onClick={(e) => handleAdd(e, product)}
-                              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+
+                            {/* Mobile: icon-only add button, Desktop: text button */}
+                            <button
+                              onClick={(e) => handleAdd(e, product)}
+                              className="flex items-center justify-center rounded-full transition-all active:scale-90"
                               style={{
+                                width: "28px",
+                                height: "28px",
                                 background: isAdded ? "rgba(0,229,255,0.15)" : `${product.accentColor}18`,
                                 border: `1px solid ${isAdded ? "#00E5FF" : product.accentColor}`,
                                 color: isAdded ? "#00E5FF" : product.accentColor,
-                              }}>
-                              {isAdded ? "✓" : <ShoppingBag className="w-3 h-3" />}
-                              {isAdded ? "Added" : "Add"}
+                              }}
+                              aria-label="Add to cart">
+                              {isAdded
+                                ? <span className="text-[10px] font-black">✓</span>
+                                : <ShoppingBag className="w-3 h-3" />}
                             </button>
                           </div>
                         </div>
@@ -444,6 +466,7 @@ function ShopGridContent() {
     </section>
   );
 }
+
 
 export default function ShopGrid() {
   return (

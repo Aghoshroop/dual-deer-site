@@ -246,9 +246,68 @@ export function getSettings(): SiteSettings {
   return load<SiteSettings>(KEYS.SETTINGS, DEFAULT_SETTINGS);
 }
 
-export function saveSettings(settings: SiteSettings): void {
+export async function saveSettings(settings: SiteSettings): Promise<void> {
   save(KEYS.SETTINGS, settings);
   dispatchStoreEvent("settings");
+  // Persist non-image fields to Firestore (performanceImage is synced separately via savePerformanceImage)
+  try {
+    const { performanceImage: _omit, ...firestoreSafe } = settings;
+    await setDoc(doc(db, "settings", "global"), sanitize(firestoreSafe), { merge: true });
+  } catch (e) {
+    console.error("[store] Failed to sync settings to Firestore:", e);
+  }
+}
+
+/**
+ * Saves the ImgBB CDN URL to Firestore `settings/global.performanceImage`.
+ * All devices listening via onSettingsUpdate() will receive the update instantly.
+ */
+export async function savePerformanceImage(imgbbUrl: string): Promise<void> {
+  try {
+    await setDoc(doc(db, "settings", "global"), { performanceImage: imgbbUrl }, { merge: true });
+    // Also cache locally so we don't re-fetch on the same device
+    const current = getSettings();
+    save(KEYS.SETTINGS, { ...current, performanceImage: imgbbUrl });
+    dispatchStoreEvent("settings");
+  } catch (e) {
+    console.error("[store] Failed to save performance image to Firestore:", e);
+    throw e;
+  }
+}
+
+/**
+ * Clears the performance image from Firestore and localStorage.
+ */
+export async function clearPerformanceImage(): Promise<void> {
+  try {
+    await setDoc(doc(db, "settings", "global"), { performanceImage: null }, { merge: true });
+    const current = getSettings();
+    const updated = { ...current };
+    delete updated.performanceImage;
+    save(KEYS.SETTINGS, updated);
+    dispatchStoreEvent("settings");
+  } catch (e) {
+    console.error("[store] Failed to clear performance image:", e);
+    throw e;
+  }
+}
+
+/**
+ * Subscribe to real-time Firestore settings updates.
+ * Returns an unsubscribe function. Used by PerformanceSection.
+ */
+export function onSettingsUpdate(callback: (data: Partial<SiteSettings>) => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const unsubscribe = onSnapshot(
+    doc(db, "settings", "global"),
+    (snap) => {
+      if (snap.exists()) {
+        callback(snap.data() as Partial<SiteSettings>);
+      }
+    },
+    (err) => console.error("[store] Settings snapshot error:", err)
+  );
+  return unsubscribe;
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────

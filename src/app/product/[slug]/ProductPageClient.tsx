@@ -33,11 +33,11 @@ export default function ProductPageClient({
   product,
   relatedProducts,
 }: {
-  product: Product;
+  product: Product | null;
   relatedProducts: Product[];
 }) {
   const { addToCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState(product.sizes[2] || product.sizes[0]);
+  const [selectedSize, setSelectedSize] = useState(product?.sizes[2] || product?.sizes[0] || "");
   const [selectedColor, setSelectedColor] = useState(0);
   const [added, setAdded] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
@@ -52,6 +52,24 @@ export default function ProductPageClient({
     target: galleryRef,
     offset: ["start start", "end end"],
   });
+
+  // ── Product not found — show clean 404 ──────────────────────────
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-[#050508] text-white flex flex-col items-center justify-center gap-6 px-6">
+        <p className="text-xs font-mono tracking-[0.4em] text-purple-400">404 — NOT FOUND</p>
+        <h1 className="text-4xl md:text-6xl font-black text-white text-center">Product not found.</h1>
+        <p className="text-gray-500 text-center max-w-sm">This product doesn&apos;t exist or may have been removed.</p>
+        <Link
+          href="/shop"
+          className="px-8 py-4 rounded-full font-black text-white text-sm"
+          style={{ background: "linear-gradient(135deg, #6A00FF, #9D4DFF)", boxShadow: "0 0 32px rgba(106,0,255,0.4)" }}
+        >
+          Browse All Products
+        </Link>
+      </main>
+    );
+  }
 
   const handleAddToCart = () => {
     addToCart(product, selectedSize);

@@ -11,7 +11,7 @@ import {
   getProducts, saveProduct, deleteProduct, generateProductId, generateSlug,
   getDiscounts, saveDiscount, deleteDiscount,
   getOffers, saveOffer, deleteOffer,
-  getSettings, saveSettings,
+  getSettings, saveSettings, savePerformanceImage, clearPerformanceImage,
   getActiveOffer, Offer,
   getOrders, updateOrderStatus, markAllOrdersRead, Order, onStoreUpdate
 } from "@/lib/store";
@@ -22,6 +22,134 @@ import { getRegisteredAccounts, StoredAccount } from "@/lib/AuthContext";
 type Tab = "overview" | "orders" | "products" | "discounts" | "offers" | "emails" | "users" | "settings";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+// ─── Performance Image Uploader ───────────────────────────────────────────────
+// Uploads to ImgBB CDN, then writes the public URL to Firestore.
+// All devices subscribed via onSettingsUpdate() see the change instantly.
+
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY ?? "";
+
+async function uploadToImgBB(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`ImgBB upload failed: ${res.status}`);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error?.message ?? "ImgBB upload failed");
+  // Use the display URL which is a direct CDN link served from ImgBB
+  return json.data.display_url as string;
+}
+
+function PerformanceImageUploader({
+  currentUrl,
+  onUploaded,
+  onCleared,
+  showToast,
+}: {
+  currentUrl?: string;
+  onUploaded: (url: string) => void;
+  onCleared: () => void;
+  showToast: (msg: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const imgbbRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    if (file.size > 32 * 1024 * 1024) { alert("Max file size for ImgBB is 32MB."); return; }
+    setUploading(true);
+    try {
+      const url = await uploadToImgBB(file);
+      await savePerformanceImage(url);  // → Firestore → all devices update instantly
+      onUploaded(url);
+      showToast("✓ Performance image live on all devices!");
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed. Check your ImgBB API key or try a smaller image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleClear = async () => {
+    try {
+      await clearPerformanceImage();
+      onCleared();
+      showToast("Performance image removed from all devices.");
+    } catch {
+      alert("Failed to remove image. Try again.");
+    }
+  };
+
+  return (
+    <div className="pt-2">
+      <label className="text-xs text-gray-400 mb-1 block">Performance Architecture Section Image</label>
+      <p className="text-[10px] text-gray-600 mb-3">
+        Uploaded to ImgBB CDN — visible on <strong className="text-gray-500">all devices</strong> instantly.
+        JPG/PNG/WebP, max 32MB.
+      </p>
+
+      {currentUrl ? (
+        <div
+          className="relative w-full h-44 rounded-xl overflow-hidden mb-2 group"
+          style={{ border: "1px solid rgba(157,77,255,0.3)" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentUrl} alt="Performance section" className="w-full h-full object-cover" />
+          {/* Overlay: CDN badge + remove button */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
+          <div className="absolute top-2 left-2 text-[10px] font-mono px-2 py-1 rounded"
+            style={{ background: "rgba(0,229,255,0.15)", color: "#00E5FF", border: "1px solid rgba(0,229,255,0.2)" }}>
+            ● LIVE — ImgBB CDN
+          </div>
+          <button
+            onClick={handleClear}
+            className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white
+                       opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: "rgba(239,68,68,0.85)" }}
+          >
+            <X className="w-3 h-3" /> Remove
+          </button>
+          <div className="absolute bottom-2 left-2 right-2 text-[10px] font-mono text-white/50 truncate">
+            {currentUrl}
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => imgbbRef.current?.click()}
+          disabled={uploading}
+          className="flex flex-col items-center justify-center w-full h-32 rounded-xl cursor-pointer transition-all hover:border-purple-500 disabled:opacity-50 disabled:cursor-wait"
+          style={{ border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
+        >
+          {uploading ? (
+            <>
+              <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mb-2" />
+              <span className="text-xs text-purple-400 font-mono">Uploading to ImgBB...</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-6 h-6 text-gray-500 mb-2" />
+              <span className="text-xs text-gray-400">Click to upload performance image</span>
+              <span className="text-[10px] text-gray-600 mt-1">ImgBB CDN · visible worldwide</span>
+            </>
+          )}
+        </button>
+      )}
+
+      <input
+        ref={imgbbRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={(e) => handleUpload(e.target.files)}
+      />
+    </div>
+  );
+}
 
 function StatCard({ label, value, color, icon }: { label: string; value: string; color: string; icon: React.ReactNode }) {
   return (
@@ -895,53 +1023,12 @@ export default function AdminPage() {
                 </div>
 
                 {/* ── Performance Architecture Section Image ── */}
-                <div className="pt-2">
-                  <label className="text-xs text-gray-400 mb-1 block">Performance Architecture Section Image</label>
-                  <p className="text-[10px] text-gray-600 mb-3">Replaces the placeholder grid in the &quot;Speed is engineered&quot; section on the homepage. JPG/PNG/WebP, max 5MB.</p>
-
-                  {settings.performanceImage ? (
-                    <div className="relative w-full h-40 rounded-xl overflow-hidden mb-2 group"
-                      style={{ border: "1px solid rgba(157,77,255,0.25)" }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={settings.performanceImage}
-                        alt="Performance section"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => setSettings(s => s ? { ...s, performanceImage: undefined } : s)}
-                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
-                      <div className="absolute bottom-2 left-2 text-[10px] font-mono text-white/60 bg-black/40 px-2 py-0.5 rounded">
-                        ✓ Image set — hover to remove
-                      </div>
-                    </div>
-                  ) : (
-                    <label
-                      className="flex flex-col items-center justify-center w-full h-32 rounded-xl cursor-pointer transition-all hover:border-purple-500"
-                      style={{ border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
-                    >
-                      <Upload className="w-6 h-6 text-gray-500 mb-2" />
-                      <span className="text-xs text-gray-500">Click to upload performance image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) { alert("Max file size is 5MB."); return; }
-                          const { saveImage, getImage } = await import("@/lib/imageStore");
-                          const id = await saveImage(file);
-                          const url = await getImage(id);
-                          if (url) setSettings(s => s ? { ...s, performanceImage: url } : s);
-                        }}
-                      />
-                    </label>
-                  )}
-                </div>
+                <PerformanceImageUploader
+                  currentUrl={settings.performanceImage}
+                  onUploaded={(url) => setSettings(s => s ? { ...s, performanceImage: url } : s)}
+                  onCleared={() => setSettings(s => s ? { ...s, performanceImage: undefined } : s)}
+                  showToast={showToast}
+                />
 
                 <button onClick={handleSaveSettings}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white text-sm transition-all hover:scale-105"
